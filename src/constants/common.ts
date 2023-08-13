@@ -10,3 +10,10 @@ export const SCHEDULE_PERIOD: { [key: string]: string } = {
   SAT: "토요일",
   SUN: "일요일",
 };
+
+export const FILTER: { [key: string]: string } = {
+  SCHEDULED: "contentsStateScheduled",
+  COMPLETED: "contentsStateCompleted",
+  FREE_EPISODE: "freedEpisodeSize",
+  IS_PRINT: "isPrint",
+};

@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { getComicsList } from "../logics/api";
 import ToonContainer from "../components/ToonContainer";
 import styled from "@emotion/styled";
-import { LEZHIN_ICON_URL } from "../constants/common";
+import { FILTER, LEZHIN_ICON_URL } from "../constants/common";
 import FilterContainer from "../components/FilterContainer";
 import { useInfinityScroll } from "../logics/hook";
 
@@ -53,25 +53,39 @@ export default function RankPage() {
   const ref = useRef<HTMLDivElement>(null);
   const [touch] = useInfinityScroll(ref, isLoading);
 
+  const getURLData = async (genre: string, page: string | number) => {
+    const res = await getComicsList(genre, page);
+    setList(res.data);
+    setFilteredData(res.data);
+  };
+
+  const fetchMoreData = async () => {
+    setIsLoading(true);
+    const res = await getComicsList(genre as string, page + 1);
+    setList((prevData: any) => [...prevData, ...res.data]);
+    setPage(page + 1);
+    setIsLoading(true);
+  };
+
   const changeFilter = (type: string, value: string | number | boolean) => {
     let newFilter = [...filter];
     const filteredIndex = newFilter.findIndex((filter) => filter.type === type);
     const isScheduled = filter.some(
-      (item: any) => item.type === "contentsStateScheduled"
+      (item: any) => item.type === FILTER["SCHEDULED"]
     );
     const isCompleted = filter.some(
-      (item: any) => item.type === "contentsStateCompleted"
+      (item: any) => item.type === FILTER["COMPLETED"]
     );
-    if (type === "contentsStateCompleted" && isScheduled) {
+    if (type === FILTER["COMPLETED"] && isScheduled) {
       const checkIndex = newFilter.findIndex(
-        (filter) => filter.type === "contentsStateScheduled"
+        (filter) => filter.type === FILTER["SCHEDULED"]
       );
       newFilter.splice(checkIndex, 1);
     }
 
-    if (type === "contentsStateScheduled" && isCompleted) {
+    if (type === FILTER["SCHEDULED"] && isCompleted) {
       const checkIndex = newFilter.findIndex(
-        (filter) => filter.type === "contentsStateCompleted"
+        (filter) => filter.type === FILTER["COMPLETED"]
       );
       newFilter.splice(checkIndex, 1);
     }
@@ -81,13 +95,8 @@ export default function RankPage() {
     } else {
       newFilter.push({ type, value });
     }
-    setFilter(newFilter);
-  };
 
-  const getURLData = async (genre: string, page: string | number) => {
-    const res = await getComicsList(genre, page);
-    setList(res.data);
-    setFilteredData(res.data);
+    setFilter(newFilter);
   };
 
   useEffect(() => {
@@ -104,19 +113,19 @@ export default function RankPage() {
   useEffect(() => {
     let filtered = list;
     filter.forEach((items: any) => {
-      if (items.type === "contentsStateScheduled") {
+      if (items.type === FILTER["SCHEDULED"]) {
         filtered = filtered?.filter(
           (item: any) => item.contentsState === "scheduled"
         );
-      } else if (items.type === "contentsStateCompleted") {
+      } else if (items.type === FILTER["COMPLETED"]) {
         filtered = filtered?.filter(
           (item: any) => item.contentsState === "completed"
         );
-      } else if (items.type === "freedEpisodeSize") {
+      } else if (items.type === FILTER["FREE_EPISODE"]) {
         filtered = filtered?.filter(
           (item: any) => item.freedEpisodeSize > items.value
         );
-      } else if (items.type === "isPrint") {
+      } else if (items.type === FILTER["IS_PRINT"]) {
         filtered = filtered?.filter(
           (item: any) => item.isPrint === items.value
         );
@@ -127,17 +136,9 @@ export default function RankPage() {
 
   useEffect(() => {
     if (touch && page < 5) {
-      moreData();
+      fetchMoreData();
     }
   }, [touch]);
-
-  const moreData = async () => {
-    setIsLoading(true);
-    const res = await getComicsList(genre as string, page + 1);
-    setList((prevData: any) => [...prevData, ...res.data]);
-    setPage(page + 1);
-    setIsLoading(true);
-  };
 
   return (
     <BodyWrapper ref={ref}>

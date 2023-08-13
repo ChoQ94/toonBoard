@@ -24,10 +24,10 @@ const ThumbnailImage = styled.img`
 `;
 
 const RankingWrapper = styled.div`
-  width: 60px;
+  width: 80px;
   height: 100%;
   text-align: center;
-  margin-right: 10px;
+  // margin-right: 10px;
 `;
 
 const ToonDetail = styled.div`

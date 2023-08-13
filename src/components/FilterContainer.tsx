@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import React from "react";
+import { FILTER } from "../constants/common";
 
 const FilterWrapper = styled.div`
   width: 600px;
@@ -30,13 +31,13 @@ export default function FilterContainer(props: FilterProps) {
       <FilterButton
         style={{
           background: filter.some(
-            (item: any) => item.type === "contentsStateScheduled"
+            (item: any) => item.type === FILTER["SCHEDULED"]
           )
             ? "red"
             : "#3f4143",
         }}
         onClick={() => {
-          changeFilter("contentsStateScheduled", "scheduled");
+          changeFilter(FILTER["SCHEDULED"], "scheduled");
         }}
       >
         연재중
@@ -44,13 +45,13 @@ export default function FilterContainer(props: FilterProps) {
       <FilterButton
         style={{
           background: filter.some(
-            (item: any) => item.type === "contentsStateCompleted"
+            (item: any) => item.type === FILTER["COMPLETED"]
           )
             ? "red"
             : "#3f4143",
         }}
         onClick={() => {
-          changeFilter("contentsStateCompleted", "completed");
+          changeFilter(FILTER["COMPLETED"], "completed");
         }}
       >
         완결
@@ -58,25 +59,27 @@ export default function FilterContainer(props: FilterProps) {
       <FilterButton
         style={{
           background: filter.some(
-            (item: any) => item.type === "freedEpisodeSize"
+            (item: any) => item.type === FILTER["FREE_EPISODE"]
           )
             ? "red"
             : "#3f4143",
         }}
         onClick={() => {
-          changeFilter("freedEpisodeSize", 3);
+          changeFilter(FILTER["FREE_EPISODE"], 3);
         }}
       >
         무료회차 3회 이상
       </FilterButton>
       <FilterButton
         style={{
-          background: filter.some((item: any) => item.type === "isPrint")
+          background: filter.some(
+            (item: any) => item.type === FILTER["IS_PRINT"]
+          )
             ? "red"
             : "#3f4143",
         }}
         onClick={() => {
-          changeFilter("isPrint", true);
+          changeFilter(FILTER["IS_PRINT"], true);
         }}
       >
         단행본
