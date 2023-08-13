@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getComicsList, getRomanceList } from "../logics/api";
+import { getComicsList } from "../logics/api";
 import ToonContainer from "../components/ToonContainer";
 import styled from "@emotion/styled";
 import { LEZHIN_ICON_URL } from "../constants/common";
 import FilterContainer from "../components/FilterContainer";
+import { useInfinityScroll } from "../logics/hook";
 
 const BodyWrapper = styled.div`
   display: flex;
@@ -38,16 +40,18 @@ const RankingTitleWrapper = styled.div`
 const ToonListWrapper = styled.div``;
 
 export default function RankPage() {
-  const [target, setTarget] = useState(null);
-
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const genre = queryParams.get("genre");
-
-  const [list, setList] = useState<any>([]); // 본데이터
-  const [filteredData, setFilteredData] = useState<any>(); // 필터데이터
-  const [filter, setFilter] = useState<any>([]); // 필터
+  const [list, setList] = useState<any>([]);
+  const [filteredData, setFilteredData] = useState<any>();
+  const [filter, setFilter] = useState<any>([]);
+  const [page, setPage] = useState<number>(1);
+  const bottomRef = useRef(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const [touch] = useInfinityScroll(ref, isLoading);
 
   const changeFilter = (type: string, value: string | number | boolean) => {
     let newFilter = [...filter];
@@ -121,8 +125,22 @@ export default function RankPage() {
     setFilteredData(filtered);
   }, [filter, list]);
 
+  useEffect(() => {
+    if (touch && page < 5) {
+      moreData();
+    }
+  }, [touch]);
+
+  const moreData = async () => {
+    setIsLoading(true);
+    const res = await getComicsList(genre as string, page + 1);
+    setList((prevData: any) => [...prevData, ...res.data]);
+    setPage(page + 1);
+    setIsLoading(true);
+  };
+
   return (
-    <BodyWrapper>
+    <BodyWrapper ref={ref}>
       <RankingTitleWrapper>
         <LezhinIconWrapper
           onClick={() => {
@@ -144,6 +162,7 @@ export default function RankPage() {
           filteredData?.map((toon: any) => {
             return <ToonContainer key={toon.id} toon={toon} />;
           })}
+        <div ref={bottomRef} />
       </ToonListWrapper>
     </BodyWrapper>
   );
