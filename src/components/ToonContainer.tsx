@@ -24,7 +24,7 @@ const ThumbnailImage = styled.img`
 `;
 
 const RankingWrapper = styled.div`
-  width: 50px;
+  width: 60px;
   height: 100%;
   text-align: center;
   margin-right: 10px;
@@ -48,15 +48,18 @@ interface ToonDetailProps {
 
 export default function ToonContainer(props: ToonDetailProps) {
   const { toon } = props;
-  console.log(toon);
 
   const calculateRank = (currentRank: number, prevRank: number) => {
     if (currentRank - prevRank > 0) {
-      return `▲ ${currentRank - prevRank}`;
+      return (
+        <div style={{ color: "red" }}>{`▲ ${currentRank - prevRank}`}</div>
+      );
     } else if (currentRank - prevRank === 0) {
       return "-";
     } else {
-      return `▼ ${prevRank - currentRank}`;
+      return (
+        <div style={{ color: "blue" }}>{`▼ ${prevRank - currentRank}`}</div>
+      );
     }
   };
 

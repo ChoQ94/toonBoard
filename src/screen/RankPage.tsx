@@ -4,6 +4,7 @@ import { getComicsList, getRomanceList } from "../logics/api";
 import ToonContainer from "../components/ToonContainer";
 import styled from "@emotion/styled";
 import { LEZHIN_ICON_URL } from "../constants/common";
+import FilterContainer from "../components/FilterContainer";
 
 const BodyWrapper = styled.div`
   display: flex;
@@ -28,29 +29,63 @@ const LezhinIconWrapper = styled.div`
 const RankingTitleWrapper = styled.div`
   font-size: 50px;
   font-weight: bold;
-  width: 700px;
+  width: 600px;
   margin: 50px 0 20px 0;
   color: #dbdee3;
   display: flex;
   align-items: center;
 `;
-
 const ToonListWrapper = styled.div``;
 
 export default function RankPage() {
+  const [target, setTarget] = useState(null);
+
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const genre = queryParams.get("genre");
 
-  const [data, setData] = useState<any>({});
+  const [list, setList] = useState<any>([]); // 본데이터
+  const [filteredData, setFilteredData] = useState<any>(); // 필터데이터
+  const [filter, setFilter] = useState<any>([]); // 필터
+
+  const changeFilter = (type: string, value: string | number | boolean) => {
+    let newFilter = [...filter];
+    const filteredIndex = newFilter.findIndex((filter) => filter.type === type);
+    const isScheduled = filter.some(
+      (item: any) => item.type === "contentsStateScheduled"
+    );
+    const isCompleted = filter.some(
+      (item: any) => item.type === "contentsStateCompleted"
+    );
+    if (type === "contentsStateCompleted" && isScheduled) {
+      const checkIndex = newFilter.findIndex(
+        (filter) => filter.type === "contentsStateScheduled"
+      );
+      newFilter.splice(checkIndex, 1);
+    }
+
+    if (type === "contentsStateScheduled" && isCompleted) {
+      const checkIndex = newFilter.findIndex(
+        (filter) => filter.type === "contentsStateCompleted"
+      );
+      newFilter.splice(checkIndex, 1);
+    }
+
+    if (filteredIndex !== -1) {
+      newFilter.splice(filteredIndex, 1);
+    } else {
+      newFilter.push({ type, value });
+    }
+    setFilter(newFilter);
+  };
 
   const getURLData = async (genre: string, page: string | number) => {
     const res = await getComicsList(genre, page);
-    setData(res);
+    setList(res.data);
+    setFilteredData(res.data);
   };
 
-  console.log(data);
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const genre = queryParams.get("genre");
@@ -61,6 +96,30 @@ export default function RankPage() {
       getURLData(genre, 1);
     }
   }, [location.search, navigate]);
+
+  useEffect(() => {
+    let filtered = list;
+    filter.forEach((items: any) => {
+      if (items.type === "contentsStateScheduled") {
+        filtered = filtered?.filter(
+          (item: any) => item.contentsState === "scheduled"
+        );
+      } else if (items.type === "contentsStateCompleted") {
+        filtered = filtered?.filter(
+          (item: any) => item.contentsState === "completed"
+        );
+      } else if (items.type === "freedEpisodeSize") {
+        filtered = filtered?.filter(
+          (item: any) => item.freedEpisodeSize > items.value
+        );
+      } else if (items.type === "isPrint") {
+        filtered = filtered?.filter(
+          (item: any) => item.isPrint === items.value
+        );
+      }
+    });
+    setFilteredData(filtered);
+  }, [filter, list]);
 
   return (
     <BodyWrapper>
@@ -79,10 +138,11 @@ export default function RankPage() {
         </LezhinIconWrapper>
         {`${genre === "romance" ? "로맨스" : "드라마"}`} 장르 랭킹
       </RankingTitleWrapper>
+      <FilterContainer filter={filter} changeFilter={changeFilter} />
       <ToonListWrapper>
-        {data &&
-          data.data?.map((toon: any) => {
-            return <ToonContainer toon={toon} />;
+        {filteredData &&
+          filteredData?.map((toon: any) => {
+            return <ToonContainer key={toon.id} toon={toon} />;
           })}
       </ToonListWrapper>
     </BodyWrapper>
