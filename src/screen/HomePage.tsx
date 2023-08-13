@@ -15,7 +15,9 @@ export default function HomePage() {
         alignItems: "center",
       }}
     >
-      <div style={{ color: "white", marginTop: "200px" }}>
+      <div
+        style={{ color: "white", margin: "200px 0 30px 0", fontWeight: "bold" }}
+      >
         조규원(프런트 과제)
       </div>
       <button
@@ -44,9 +46,6 @@ export default function HomePage() {
       >
         드라마 장르 랭킹
       </button>
-      <div style={{ color: "white", marginTop: "200px" }}>
-        * 랭킹 페이지에서 로고버튼을 누르면 다시 이 화면으로 돌아옵니다.
-      </div>
     </div>
   );
 }
